@@ -1,7 +1,8 @@
 import numpy as np
 from graph_tool import Graph
 from graph_tool.search import cpbfs_search
-from steiner_tree_mst import init_visitor, extract_edges_from_pred
+from utils import extract_edges_from_pred, init_visitor
+
 
 # @profile
 def steiner_tree_greedy(

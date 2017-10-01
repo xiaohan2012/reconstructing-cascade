@@ -78,8 +78,8 @@ def run_k_rounds(g, p, q, model, method,
     else:
         from joblib import Parallel, delayed
         rows = Parallel(n_jobs=6)(delayed(one_run)(g, p, q, model, result_dir, i,
-                                                    verbose, debug)
-                                   for i in iters)
+                                                   verbose, debug)
+                                  for i in iters)
 
     df = pd.DataFrame(rows, columns=['time'])
     return df.describe()

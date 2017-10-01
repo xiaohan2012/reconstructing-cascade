@@ -3,10 +3,9 @@ import pytest
 from graph_tool.all import load_graph
 
 from steiner_tree_greedy import steiner_tree_greedy
-from steiner_tree_mst import steiner_tree_mst, build_closure
 from steiner_tree import get_steiner_tree
+from core import find_tree_by_closure
 
-from mst_truncated import build_truncated_closure
 from temporal_bfs import temporal_bfs
 from utils import earliest_obs_node
 from feasibility import is_feasible
@@ -22,7 +21,7 @@ K = 10
 
 
 @pytest.fixture
-def cascades_on_tree():
+def cascades_on_grid():
     cascades = []
     g = load_graph('data/grid/2-6/graph.gt')
     for model in MODELS:
@@ -36,8 +35,8 @@ def cascades_on_tree():
     return cascades
         
 
-def test_greedy(cascades_on_tree):
-    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_tree:
+def test_greedy(cascades_on_grid):
+    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_grid:
         print(model, q, i)
         root = earliest_obs_node(obs_nodes, infection_times)
         tree = steiner_tree_greedy(
@@ -48,13 +47,12 @@ def test_greedy(cascades_on_tree):
         assert is_feasible(tree, root, obs_nodes, infection_times)
 
 
-def test_mst(cascades_on_tree):
-    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_tree:
+def test_closure(cascades_on_grid):
+    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_grid:
         print(model, q, i)
         root = earliest_obs_node(obs_nodes, infection_times)
-        tree = steiner_tree_mst(
-            g, root, infection_times, source, obs_nodes,
-            closure_builder=build_closure,
+        tree = find_tree_by_closure(
+            g, root, infection_times, obs_nodes,
             strictly_smaller=False,
             debug=False,
             verbose=False,
@@ -62,8 +60,8 @@ def test_mst(cascades_on_tree):
         assert is_feasible(tree, root, obs_nodes, infection_times)
 
 
-def test_temporal_bfs(cascades_on_tree):
-    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_tree:
+def test_temporal_bfs(cascades_on_grid):
+    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_grid:
         print(model, q, i)
         root = earliest_obs_node(obs_nodes, infection_times)
         tree = temporal_bfs(
@@ -74,8 +72,8 @@ def test_temporal_bfs(cascades_on_tree):
         assert is_feasible(tree, root, obs_nodes, infection_times)
 
 
-def test_vanilla_steiner_tree(cascades_on_tree):
-    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_tree:
+def test_vanilla_steiner_tree(cascades_on_grid):
+    for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_grid:
         print(model, q, i)
         root = earliest_obs_node(obs_nodes, infection_times)
         pred_tree = get_steiner_tree(

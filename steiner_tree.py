@@ -4,7 +4,7 @@ find minimum steiner tree (undirected)
 import numpy as np
 from graph_tool import Graph, GraphView
 from graph_tool.search import pbfs_search
-from steiner_tree_mst import get_edges
+from core import get_edges
 from utils import init_visitor, extract_edges_from_pred
 from graph_tool.topology import min_spanning_tree
 from gt_utils import edges_to_directed_tree, build_minimum_tree, extract_edges

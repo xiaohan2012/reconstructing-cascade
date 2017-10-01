@@ -1,7 +1,7 @@
 import numpy as np
 from graph_tool import GraphView
 from graph_tool.all import pbfs_search, label_components
-from steiner_tree_mst import extract_edges_from_pred, init_visitor
+from utils import extract_edges_from_pred, init_visitor
 from gt_utils import get_roots
 
 

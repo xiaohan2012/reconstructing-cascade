@@ -5,7 +5,7 @@ import networkx as nx
 import numpy as np
 from networkx.generators.random_graphs import random_powerlaw_tree
 from graph_generator import kronecker_random_graph, grid_2d, \
-    P_peri ,P_hier, P_rand, add_p_and_delta
+    P_peri ,P_hier, P_rand
 
 
 KRONECKER_RAND = 'kr-rand'

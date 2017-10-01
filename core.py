@@ -6,10 +6,7 @@ from graph_tool.search import cpbfs_search, bfs_iterator
 from pyedmond import find_minimum_branching
 
 from utils import init_visitor, extract_edges_from_pred
-
-
-class TreeNotFound(ValueError):
-    pass
+from errors import TreeNotFound
 
 
 def get_edges(dist, root, terminals):

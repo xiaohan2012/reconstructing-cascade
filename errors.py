@@ -1,0 +1,2 @@
+class TreeNotFound(ValueError):
+    pass

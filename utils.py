@@ -4,6 +4,8 @@ from graph_tool import GraphView, Graph
 from graph_tool.search import pbfs_search
 from collections import Counter
 from graph_tool.all import BFSVisitor, shortest_distance, shortest_path
+from errors import TreeNotFound
+
 
 MAXINT = np.iinfo(np.int32).max
 
@@ -82,7 +84,6 @@ def init_visitor(g, root):
     pred = {i: -1 for i in range(g.num_vertices())}
     vis = MyVisitor(pred, dist)
     return vis
-
 
 
 def weighted_sample_with_replacement(pool, weights, N):
@@ -255,3 +256,63 @@ def get_paths(t, source, terminals):
             for n in terminals]
 
 
+def remove_redundant_edges_from_tree(g, tree, r, terminals):
+    """given a set of edges, a root, and terminals to cover,
+    return a new tree with redundant edges removed"""
+    efilt = g.new_edge_property('bool')
+    for u, v in tree:
+        efilt[g.edge(u, v)] = True
+    tree = GraphView(g, efilt=efilt)
+
+    # remove redundant edges
+    min_tree_efilt = g.new_edge_property('bool')
+    min_tree_efilt.set_2d_array(np.zeros(g.num_edges()))
+    for o in terminals:
+        if o != r:
+            tree.vertex(r)
+            tree.vertex(o)
+            _, edge_list = shortest_path(tree, source=tree.vertex(r), target=tree.vertex(o))
+            assert len(edge_list) > 0, 'unable to reach {} from {}'.format(o, r)
+            for e in edge_list:
+                min_tree_efilt[e] = True
+    min_tree = GraphView(g, efilt=min_tree_efilt)
+    return min_tree
+
+
+def tree_sizes_by_roots(g, obs_nodes, infection_times, source, method='sync_tbfs', return_trees=False):
+    """
+    use temporal BFS to get the scores for each node in terms of the negative size of the inferred tree
+    thus, the larger the better
+    """
+    assert method in {'sync_tbfs', 'tbfs', 'closure'}
+    cand_sources = set(np.arange(g.num_vertices())) - set(obs_nodes)
+
+    tree_sizes = np.ones(g.num_vertices()) * float('inf')
+    trees = {}
+    for r in cand_sources:
+        try:
+            if method == 'tbfs':
+                from tbfs import temporal_bfs
+                early_node = min(obs_nodes, key=infection_times.__getitem__)
+                t_min = infection_times[early_node]
+                D = t_min - shortest_distance(g, source=g.vertex(r), target=g.vertex(early_node))
+                # print('D: {}'.format(D))
+                tree = temporal_bfs(g, r, D, infection_times, source, obs_nodes, debug=False)
+            elif method == 'closure':
+                from core import find_tree_by_closure
+                tree = find_tree_by_closure(g, r, infection_times,
+                                            terminals=list(obs_nodes),
+                                            debug=False)
+        except TreeNotFound:
+            tree = None
+
+        if tree:
+            tree_sizes[r] = tree.num_edges()
+
+        if return_trees:
+            trees[r] = tree
+
+    if return_trees:
+        return -tree_sizes, trees
+    else:
+        return -tree_sizes

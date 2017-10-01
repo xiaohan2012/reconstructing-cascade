@@ -1,9 +1,14 @@
+import numpy as np
 import pytest
 from graph_tool import Graph
 from core import (TreeNotFound,
                   build_closure_with_order,
                   find_tree_by_closure)
+
 from gt_utils import extract_edges
+from ic import gen_nontrivial_cascade
+from utils import tree_sizes_by_roots, get_rank_index
+from fixtures import grid_and_cascade, tree_and_cascade
 
 
 @pytest.fixture
@@ -80,3 +85,29 @@ def test_find_tree_by_closure(g, cand_source, terminals,
             k=-1,
             debug=True,
             verbose=False)
+
+
+def test_best_tree_sizes_grid_closure(grid_and_cascade):
+    g, _, infection_times, source, obs_nodes = grid_and_cascade
+    scores = tree_sizes_by_roots(g, obs_nodes, infection_times, source,
+                                 method='closure')
+    assert get_rank_index(scores, source) <= 10  # make sure it runs, how can we assume the source's rank?
+
+
+def test_full_observation_tree_closure(tree_and_cascade):
+    g = tree_and_cascade[0]
+    for p in np.arange(0.2, 1.0, 0.1):
+        infection_times, source, obs_nodes = gen_nontrivial_cascade(g, p, 1.0)
+        scores = tree_sizes_by_roots(g, obs_nodes, infection_times, source,
+                                     method='closure')
+        assert get_rank_index(scores, source) == 0
+
+
+def test_full_observation_grid_closure(grid_and_cascade):
+    g = grid_and_cascade[0]
+    for p in np.arange(0.5, 1.0, 0.1):
+        print('p={}'.format(p))
+        infection_times, source, obs_nodes = gen_nontrivial_cascade(g, p, 1.0)
+        scores = tree_sizes_by_roots(g, obs_nodes, infection_times, source,
+                                     method='closure')
+        assert get_rank_index(scores, source) == 0

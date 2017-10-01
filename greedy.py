@@ -5,7 +5,7 @@ from utils import extract_edges_from_pred, init_visitor
 
 
 # @profile
-def steiner_tree_greedy(
+def find_tree_greedy(
         g, root, infection_times, source, obs_nodes,
         debug=False,
         verbose=True):
@@ -26,7 +26,7 @@ def steiner_tree_greedy(
                      count_threshold=1)
 
         # add edge
-        reachable_nodes = set(np.nonzero(vis.dist > 0)[0]).intersection(tree_nodes)
+        reachable_nodes = set(filter(lambda k: vis.dist[k] > 0, vis.dist)).intersection(tree_nodes)
 
         if debug:
             print('reachable_nodes: {}'.format(reachable_nodes))

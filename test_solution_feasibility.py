@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from graph_tool.all import load_graph
 
-from steiner_tree_greedy import steiner_tree_greedy
+from greedy import find_tree_greedy
 from steiner_tree import get_steiner_tree
 from core import find_tree_by_closure
 
@@ -39,7 +39,7 @@ def test_greedy(cascades_on_grid):
     for g, infection_times, source, obs_nodes, true_tree, model, q, i in cascades_on_grid:
         print(model, q, i)
         root = earliest_obs_node(obs_nodes, infection_times)
-        tree = steiner_tree_greedy(
+        tree = find_tree_greedy(
             g, root, infection_times, source, obs_nodes,
             debug=False,
             verbose=True

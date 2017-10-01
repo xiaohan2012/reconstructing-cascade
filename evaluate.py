@@ -26,10 +26,6 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
 
     true_nodes = {i for e in true_edges for i in e}
     pred_nodes = {i for e in pred_edges for i in e}
-    
-    # mmc = matthews_corrcoef(true_labels, inferred_labels)
-    # n_prec = precision_score(true_labels, inferred_labels)
-    # n_rec = recall_score(true_labels, inferred_labels)
 
     common_nodes = true_nodes.intersection(pred_nodes)
     n_prec = len(common_nodes) / len(pred_nodes)
@@ -44,16 +40,15 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
 
     assert is_arborescence(pred_tree)
     
-    pred_times = fill_missing_time(g, pred_tree, root, obs_nodes, infection_times, debug=False)
-    
-    # pred_times = np.asarray(pred_times, dtype=float)
-    # pred_times[pred_times == -1] = float('inf')
+    pred_times = fill_missing_time(g, pred_tree, root, obs_nodes,
+                                   infection_times, debug=False)
     
     # consider only predicted nodes that are actual infections
     nodes = list(common_nodes)
     rank_corr = kendalltau(pred_times[nodes], infection_times[nodes])[0]
 
     common_edges = set(pred_edges).intersection(true_edges)
+
     e_prec = len(common_edges) / len(pred_edges)
     e_rec = len(common_edges) / len(true_edges)
 
@@ -65,11 +60,7 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
         order_accuracy = edge_order_accuracy(edges, infection_times)
     else:
         order_accuracy = 0.0
-    # leaves = get_leaves(true_tree)
-    # true_tree_paths = get_paths(true_tree, source, leaves)
-    # corrs = get_rank_corrs(pred_tree, root, true_tree_paths, debug=False)
 
-    # return (n_prec, n_rec, obj, cosine_sim, e_prec, e_rec, np.mean(corrs))
     return (n_prec, n_rec, obj, e_prec, e_rec, rank_corr, order_accuracy)
 
 

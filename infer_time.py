@@ -48,6 +48,8 @@ class BottomUpVisitor():
 
 
 def fill_missing_time(g, t, root, obs_nodes, infection_times, debug=False):
+    root = int(root)  # force type
+
     # for each node,
     # get its ancestor and descendent
     # by ancestor, it's the closest observed node on the end to the root

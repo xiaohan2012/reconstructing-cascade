@@ -5,6 +5,12 @@ from gt_utils import bottom_up_traversal
 
 
 class TopDownVisitor(BFSVisitor):
+    """
+    it's like traversing from the root down to the leaves,
+    for each node, record its closest *observed* node on the side to root
+
+    like propagate the label down
+    """
     def __init__(self, pred, root, obs_nodes):
         pred[root] = root
         self.obs = set(obs_nodes)
@@ -19,27 +25,33 @@ class TopDownVisitor(BFSVisitor):
     
 
 class BottomUpVisitor():
-    def __init__(self, pred, root, obs_nodes):
-        pred[root] = root
+    """for each node, record  its successor
+    it's like traversing from the leaves up to the root
+    """
+    def __init__(self, succ, root, obs_nodes):
+        succ[root] = root
         self.obs = set(obs_nodes)
-        self.pred = pred
+        self.succ = succ
 
     def examine_vertex(self, v):
         v = int(v)
-        if v in self.obs:
-            self.pred[v] = v
+        if v in self.obs:  # if observed, succecessor is itself
+            self.succ[v] = v
 
     def tree_edge(self, e):
         """edge from t to s"""
         s, t = int(e.source()), int(e.target())
         if s in self.obs:
-            self.pred[s] = s
+            self.succ[s] = s
         else:
-            self.pred[s] = self.pred[t]
+            self.succ[s] = self.succ[t]
 
 
 def fill_missing_time(g, t, root, obs_nodes, infection_times, debug=False):
-    # get ancestor and descendent
+    # for each node,
+    # get its ancestor and descendent
+    # by ancestor, it's the closest observed node on the end to the root
+    # by descendent, it's the next closest node on the other end to the leaf
     td_vis = TopDownVisitor(np.ones(g.num_vertices(), dtype=np.int) * -1, root, obs_nodes)
     bfs_search(t, source=root, visitor=td_vis)
 
@@ -53,10 +65,9 @@ def fill_missing_time(g, t, root, obs_nodes, infection_times, debug=False):
     pred_infection_times = np.array(infection_times)
     dist = shortest_distance(t, source=root)
     for v in hidden_nodes:
-        ans, des = td_vis.pred[v], bu_vis.pred[v]
-        assert ans != -1
-        assert des != -1, \
-                      '{}, {}'.format(v, (t.vertex(v).in_degree(), t.vertex(v).out_degree()))  # 1, 0, v=leave
+        ans, des = td_vis.pred[v], bu_vis.succ[v]
+        assert (ans != -1 and des != -1), \
+            '{}, {}'.format(v, (t.vertex(v).in_degree(), t.vertex(v).out_degree()))  # 1, 0, v=leave
 
         if debug:
             print(v, ans, des)

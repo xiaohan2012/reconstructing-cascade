@@ -2,102 +2,16 @@
 respecting time order
 """
 
-import networkx as nx
 import numpy as np
 from tqdm import tqdm
-from graph_tool.all import Graph
+from graph_tool import Graph, GraphView
 from graph_tool.search import cpbfs_search, bfs_iterator
-from graph_tool.topology import shortest_distance
-from utils import gt2nx
+from pyedmond import find_minimum_branching
 from utils import (extract_edges_from_pred,
-                   extract_tree,
-                   init_visitor, MyVisitor)
+                   init_visitor)
 
 
 
-# @profile
-def get_edges(dist, root, terminals):
-    return ((root, t, dist[t])
-            for t in terminals
-            if dist[t] != -1 and t != root)
-    
-# @profile
-def build_closure(g, cand_source, terminals, infection_times, k=-1,
-                  strictly_smaller=True,
-                  debug=False,
-                  verbose=False):
-    """
-    build a clojure graph in which cand_source + terminals are all connected to each other.
-    the number of neighbors of each node is determined by k
-
-    the larger the k, the denser the graph"""
-    r2pred = {}
-    edges = {}
-    terminals = list(terminals)
-
-    # from cand_source to terminals
-    vis = init_visitor(g, cand_source)
-    cpbfs_search(g, source=cand_source, visitor=vis, terminals=terminals,
-                 forbidden_nodes=terminals,
-                 count_threshold=k)
-    r2pred[cand_source] = vis.pred
-    for u, v, c in get_edges(vis.dist, cand_source, terminals):
-        edges[(u, v)] = c
-
-    if debug:
-        print('cand_source: {}'.format(cand_source))
-        print('#terminals: {}'.format(len(terminals)))
-        print('edges from cand_source: {}'.format(edges))
-
-    if verbose:
-        terminals_iter = tqdm(terminals)
-        print('building closure graph')
-    else:
-        terminals_iter = terminals
-
-    # from terminal to other terminals
-    for root in terminals_iter:
-
-        if strictly_smaller:
-            late_terminals = [t for t in terminals
-                              if infection_times[t] > infection_times[root]]
-        else:
-            # respect what the paper presents
-            late_terminals = [t for t in terminals
-                              if infection_times[t] >= infection_times[root]]
-
-        late_terminals = set(late_terminals) - {cand_source}  # no one can connect to cand_source
-        if debug:
-            print('root: {}'.format(root))
-            print('late_terminals: {}'.format(late_terminals))
-        vis = init_visitor(g, root)
-        cpbfs_search(g, source=root, visitor=vis, terminals=list(late_terminals),
-                     forbidden_nodes=list(set(terminals) - set(late_terminals)),
-                     count_threshold=k)
-        r2pred[root] = vis.pred
-        for u, v, c in get_edges(vis.dist, root, late_terminals):
-            if debug:
-                print('edge ({}, {})'.format(u, v))
-            edges[(u, v)] = c
-
-    if verbose:
-        print('returning closure graph')
-
-    gc = Graph(directed=True)
-
-    for _ in range(g.num_vertices()):
-        gc.add_vertex()
-
-    for (u, v) in edges:
-        gc.add_edge(u, v)
-
-    eweight = gc.new_edge_property('int')
-    eweight.set_2d_array(np.array(list(edges.values())))
-    # for e, c in edges.items():
-    #     eweight[e] = c
-    return gc, eweight, r2pred
-
-# @profile
 def steiner_tree_mst(g, root, infection_times, source, terminals,
                      closure_builder=build_closure,
                      strictly_smaller=True,
@@ -116,26 +30,14 @@ def steiner_tree_mst(g, root, infection_times, source, terminals,
     # graph_tool does not provide minimum_spanning_arborescence
     if verbose:
         print('getting mst')
-    gx = gt2nx(gc, root, terminals, edge_attrs={'weight': eweight})
-    try:
-        nx_tree = nx.minimum_spanning_arborescence(gx, 'weight')
-    except nx.exception.NetworkXException:
-        if debug:
-            print('fail to find mst')
-        if return_closure:
-            return None, gc, None
-        else:
-            return None
+    tree_edges = find_minimum_branching(gc,  [root], weights=eweight)
+    
+    efilt = gc.new_edge_property('bool')
+    efilt.a = False
+    for u, v in tree_edges:
+        efilt[gc.edge(u, v)] = True
 
-    if verbose:
-        print('returning tree')
-
-    mst_tree = Graph(directed=True)
-    for _ in range(g.num_vertices()):
-        mst_tree.add_vertex()
-
-    for u, v in nx_tree.edges():
-        mst_tree.add_edge(u, v)
+    mst_tree = GraphView(gc, efilt=efilt)
 
     if verbose:
         print('extract edges from original graph')
@@ -144,13 +46,21 @@ def steiner_tree_mst(g, root, infection_times, source, terminals,
 
     # sort observations by time
     # and also topological order
+    # why doing this: we want to start collecting the edges
+    # for nodes with higher order
     topological_index = {}
     for i, e in enumerate(bfs_iterator(mst_tree, source=root)):
         topological_index[int(e.target())] = i
+
+    print('mst_tree', mst_tree)
+    print('infection_times', infection_times)
+    print('topological_index', topological_index)
+        
     sorted_obs = sorted(
         set(terminals) - {root},
         key=lambda o: (infection_times[o], topological_index[o]))
 
+    # next, we start reconstructing the minimum steiner arborescence
     tree_nodes = {root}
     tree_edges = set()
     # print('root', root)
@@ -188,8 +98,7 @@ def steiner_tree_mst(g, root, infection_times, source, terminals,
         tree_edges |= edges
 
     t = Graph(directed=True)
-    for _ in range(g.num_vertices()):
-        t.add_vertex()
+    t.add_vertex(g.num_vertices())
 
     for u, v in tree_edges:
         t.add_edge(t.vertex(u), t.vertex(v))

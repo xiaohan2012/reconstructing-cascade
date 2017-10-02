@@ -6,8 +6,8 @@ from tqdm import tqdm
 from cascade import gen_nontrivial_cascade
 from utils import earliest_obs_node
 
-from steiner_tree_mst import steiner_tree_mst, build_closure
-from steiner_tree_greedy import steiner_tree_greedy
+from core import find_tree_by_closure
+from greedy import find_tree_greedy
 from steiner_tree import get_steiner_tree
 from temporal_bfs import temporal_bfs
 from gt_utils import extract_edges
@@ -18,13 +18,12 @@ DUMP_PERFORMANCE = False
 
 def get_tree(g, infection_times, source, obs_nodes, method, verbose=False, debug=False):
     root = earliest_obs_node(obs_nodes, infection_times)
-    if method == 'mst':
-        tree = steiner_tree_mst(g, root, infection_times, source, obs_nodes, debug=debug,
-                                closure_builder=build_closure,
-                                strictly_smaller=False,
-                                verbose=verbose)
+    if method == 'closure':
+        tree = find_tree_by_closure(g, root, infection_times, obs_nodes, debug=debug,
+                                    strictly_smaller=False,
+                                    verbose=verbose)
     elif method == 'greedy':
-        tree = steiner_tree_greedy(g, root, infection_times, source, obs_nodes,
+        tree = find_tree_greedy(g, root, infection_times, source, obs_nodes,
                                    debug=debug,
                                    verbose=verbose)
     elif method == 'no-order':
@@ -37,6 +36,9 @@ def get_tree(g, infection_times, source, obs_nodes, method, verbose=False, debug
         tree = temporal_bfs(g, root, infection_times, source, obs_nodes,
                             debug=debug,
                             verbose=verbose)
+    else:
+        raise ValueError('unknown method ', method)
+
     return tree
 
 
@@ -143,4 +145,4 @@ method: {}""".format(gtype, model, p, q, k, do_parallel, method))
     else:
         print('write result to {}'.format(output_path))
         stat.to_pickle(output_path)
-        print('done')        
+        print('done')

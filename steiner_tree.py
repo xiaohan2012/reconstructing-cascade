@@ -10,7 +10,6 @@ from graph_tool.topology import min_spanning_tree
 from gt_utils import edges_to_directed_tree, build_minimum_tree, extract_edges
 
 
-# @profile
 def build_closure(g, terminals,
                   debug=False,
                   verbose=False):
@@ -50,7 +49,6 @@ def build_closure(g, terminals,
     return gc, eweight, r2pred
 
 
-# @profile
 def get_steiner_tree(g, root, obs_nodes, debug=False, verbose=False):
     gc, eweight, r2pred = build_closure(g, obs_nodes,
                                         debug=debug, verbose=verbose)
@@ -67,14 +65,3 @@ def get_steiner_tree(g, root, obs_nodes, debug=False, verbose=False):
     # a bit involved...
     und_tree = edges_to_directed_tree(g, root, tree_edges)
     return build_minimum_tree(g, root, obs_nodes, extract_edges(und_tree))
-
-    # return build_minimum_tree(g, root, obs_nodes, tree_edges, directed=True)
-    # t = Graph(directed=False)
-
-    # for _ in range(g.num_vertices()):
-    #     t.add_vertex()
-    # for u, v in tree_edges:
-    #     t.add_edge(u, v)
-
-    # t = filter_nodes_by_edges(t, tree_edges)
-    # return remove_redundant_edges_by_bfs(t, root)

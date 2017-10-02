@@ -154,10 +154,6 @@ def find_tree_by_closure(
     for i, e in enumerate(bfs_iterator(mst_tree, source=root)):
         topological_index[int(e.target())] = i
 
-    print('mst_tree', mst_tree)
-    print('infection_times', infection_times)
-    print('topological_index', topological_index)
-
     try:
         sorted_obs = sorted(
             set(terminals) - {root},

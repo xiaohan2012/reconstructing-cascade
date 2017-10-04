@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 import pickle as pkl
 from graph_tool.all import load_graph
@@ -6,6 +7,7 @@ from glob import glob
 from tqdm import tqdm
 from utils import edges2graph
 from infer_time import fill_missing_time
+from sklearn.metrics import matthews_corrcoef
 
 from scipy.stats import kendalltau
 from feasibility import is_arborescence
@@ -18,6 +20,13 @@ def edge_order_accuracy(pred_edges, infection_times):
     return n_correct_edges / len(pred_edges)
     
 
+def matthew_cc(true_set, pred_set, n):
+    y_true = np.zeros(n)
+    y_pred = np.zeros(n)
+    y_true[list(true_set)] = 1
+    y_pred[list(pred_set)] = 1
+    return matthews_corrcoef(y_true, y_pred)
+    
 # @profile
 def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times,
                          true_edges):
@@ -26,6 +35,8 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
 
     true_nodes = {i for e in true_edges for i in e}
     pred_nodes = {i for e in pred_edges for i in e}
+
+    mcc = matthew_cc(true_nodes, pred_nodes, g.num_vertices())
 
     common_nodes = true_nodes.intersection(pred_nodes)
     n_prec = len(common_nodes) / len(pred_nodes)
@@ -61,7 +72,7 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
     else:
         order_accuracy = 0.0
 
-    return (n_prec, n_rec, obj, e_prec, e_rec, rank_corr, order_accuracy)
+    return (n_prec, n_rec, obj, e_prec, e_rec, rank_corr, order_accuracy, mcc)
 
 
 def evaluate_from_result_dir(g, result_dir, qs):
@@ -90,7 +101,8 @@ def evaluate_from_result_dir(g, result_dir, qs):
                                              'obj',
                                              'e.prec', 'e.rec',
                                              'rank-corr',
-                                             'order accuracy'
+                                             'order accuracy',
+                                             'mcc'
             ])
             yield (path, df)
         else:

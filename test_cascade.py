@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from graph_tool import load_graph
 from ctic import gen_cascade as ctic_gen
+from ic import simulate_cascade
 from feasibility import is_arborescence
 
 
@@ -25,3 +26,11 @@ def test_ctic(g):
                 stop_fraction=stop_fraction, return_tree=True)
 
             _test_result(g, source, infection_times, tree, stop_fraction)
+
+
+def test_ic(g):
+    p = 0.1
+    for i in range(10):
+        source, infection_times, tree = simulate_cascade(g, p, return_tree=True)
+        assert infection_times[source] == 0
+        assert is_arborescence(tree)

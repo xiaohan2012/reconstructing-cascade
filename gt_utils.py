@@ -23,6 +23,10 @@ def extract_edges(g):
     return [(int(u), int(v)) for u, v in g.edges()]
 
 
+def extract_nodes(g):
+    return [int(u) for u in g.vertices()]
+
+
 def gt2nx(g, root, terminals, node_attrs=None, edge_attrs=None):
     if g.is_directed():
         gx = nx.DiGraph()

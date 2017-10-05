@@ -4,7 +4,10 @@
 # gtypes=(p2p-gnutella08 arxiv-hep-th enron-email)
 # gtypes=(p2p-gnutella08)
 # gtypes=(arxiv-hep-th)
-gtypes=(facebook email-eu)  # grqc
+# gtypes=(email-eu)
+gtypes=(facebook)
+# gtypes=(facebook email-eu)  grqc
+# gtypes=(arxiv-hep-th)
 # gtypes=(dblp-collab slashdot twitter gplus)
 # gtypes=(arxiv-hep-th enron-email)
 # gtypes=("barabasi/2-6/" "barabasi/2-7/" "barabasi/2-8/" "barabasi/2-9/"
@@ -15,8 +18,9 @@ gtypes=(facebook email-eu)  # grqc
 # gtypes=("grid-64")
 # methods=(mst tbfs no-order greedy)
 methods=(closure tbfs no-order)
-model_params=("si -p 0.2" "ct -p 0.0")  # barabasi
+# model_params=("si -p 0.2" "ct -p 0.0")  # barabasi
 
+model_params=("ic -p 0.02192180745371594" "sp")  # grqc
 # model_params=("ic -p 0.0831108693813754")  # barabasi
 # model_params=("ic -p 0.2660444431189779")  #  grid
 # model_params=("ic -p 0.035241715776066926")  #  p2p

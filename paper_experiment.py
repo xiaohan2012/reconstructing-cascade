@@ -24,8 +24,8 @@ def get_tree(g, infection_times, source, obs_nodes, method, verbose=False, debug
                                     verbose=verbose)
     elif method == 'greedy':
         tree = find_tree_greedy(g, root, infection_times, source, obs_nodes,
-                                   debug=debug,
-                                   verbose=verbose)
+                                debug=debug,
+                                verbose=verbose)
     elif method == 'no-order':
         tree = get_steiner_tree(
             g, root, obs_nodes,

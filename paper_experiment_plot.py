@@ -1,9 +1,5 @@
-
 # coding: utf-8
 
-# In[13]:
-
-get_ipython().magic('matplotlib notebook')
 import matplotlib as mpl
 mpl.use('pdf')
 # mpl.rcParams.update({'font.size': 26})
@@ -44,10 +40,9 @@ def plot_performance(datasets, models, methods, qs, column_names, savefig=False,
                 try:
                     result[key][method].append(pd.read_pickle(path))
                 except FileNotFoundError:
-                    dummy = defaultdict(lambda :defaultdict(lambda: None))
+                    dummy = defaultdict(lambda: defaultdict(lambda: None))
                     result[key][method].append(dummy)
 
-    nrow = (len(datasets) if len(datasets) > 1 else len(models))
     per_width, per_height, ncol = 3, 2.2, len(column_names)
     for i, (dataset, model) in enumerate(product(datasets, models)):
         key = (dataset, model)
@@ -61,7 +56,7 @@ def plot_performance(datasets, models, methods, qs, column_names, savefig=False,
             for method in methods:
                 # one legend
                 try:
-                    ys = [df[column]['mean'] for df in result[key][method]]                
+                    ys = [df[column]['mean'] for df in result[key][method]]
                 except KeyError:
                     print(dataset, method, model)
                     raise KeyError
@@ -72,7 +67,7 @@ def plot_performance(datasets, models, methods, qs, column_names, savefig=False,
                     if i == 0:
                         lines.append(l)
                 else:
-                    continue        
+                    continue
             # ax.set_title(column)
             column_map = {'n.prec': 'n.precision', 'n.rec': 'n.recall', 'cos-sim': 'cosine sim',
                           'e.prec': 'e.precision', 'e.rec': 'e.recall',
@@ -81,12 +76,12 @@ def plot_performance(datasets, models, methods, qs, column_names, savefig=False,
             ax.locator_params(axis='y', nbins=4)
 
             ax.set_xlabel('prop. of reports')
-            ax.locator_params(axis='x', nbins=4)                
+            ax.locator_params(axis='x', nbins=4)
 
             # ylim = (0, 1)
             ylim = None
             if column in {"n.prec"}:
-                ylim  = (0.5, 1.05)
+                ylim = (0.5, 1.05)
             if column in {'obj'}:
                 ylim = None
                 
@@ -99,7 +94,7 @@ def plot_performance(datasets, models, methods, qs, column_names, savefig=False,
                 if yticks.max() > 100:
                     ax.set_yticklabels(list(map(lambda v: "{:.1f}k".format(v / 1000), yticks)))
             fig.tight_layout()
-            import os
+
             dirname = 'figs/paper_experiment/'
             if len(datasets) > 1:
                 dirname += 'by_datasets/'
@@ -151,7 +146,7 @@ else:
     # datasets = ['p2p-gnutella08']
     datasets = ['barabasi-64']
     models = ['si', 'ct']
-    methods = ["mst", "tbfs", "no-order"] 
+    methods = ["mst", "tbfs", "no-order"]
 if datasets[0] not in {'barabasi-64', 'grid-64'}:
     qs = np.linspace(0.005, 0.1, 20)
 else:

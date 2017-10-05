@@ -159,7 +159,7 @@ def find_tree_by_closure(
             set(terminals) - {root},
             key=lambda o: (infection_times[o], topological_index[o]))
     except KeyError:
-        raise TreeNotFound("it's likely that the input cannot produce a feasible solution" +
+        raise TreeNotFound("it's likely that the input cannot produce a feasible solution, " +
                            "because the topological sort on terminals does not visit all terminals")
 
     # next, we start reconstructing the minimum steiner arborescence

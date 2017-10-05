@@ -2,26 +2,34 @@ import numpy as np
 import pandas as pd
 import pickle as pkl
 
-from tqdm import tqdm
 from glob import glob
-
+from tqdm import tqdm
 from graph_tool import load_graph
+from graph_tool.topology import label_largest_component
+from joblib import Parallel, delayed
+    
 from paper_experiment import get_tree
 from cascade import observe_cascade
 from gt_utils import extract_edges
 from evaluate import edge_order_accuracy
 
 
+def one_run(g, q, result_dir, i,
+            verbose):
+    obs = observe_cascade(infection_times, source=None, q=q)
+    tree = get_tree(g, infection_times, source=None, obs_nodes=obs, method=method, verbose=verbose)
+
+    pred_edges = extract_edges(tree)
+    pkl.dump(pred_edges,
+             open(result_dir + '/{}.pkl'.format(i), 'wb'))
+
+
 def run_k_runs(g, q, infection_times, method,
                k, result_dir,
                verbose=False):
-    for i in range(k):
-        obs = observe_cascade(infection_times, source=None, q=q)
-        tree = get_tree(g, infection_times, source=None, obs_nodes=obs, method=method, verbose=verbose)
-
-        pred_edges = extract_edges(tree)
-        pkl.dump(pred_edges,
-                 open(result_dir + '/{}.pkl'.format(i), 'wb'))
+    Parallel(n_jobs=-1)(delayed(one_run)(g, q, result_dir, i,
+                                         verbose)
+                        for i in tqdm(range(k), total=k))
 
 
 def evaluate(pred_edges, infection_times):
@@ -69,7 +77,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-    g = load_graph('data/digg/cascade_graph.gt')
+    g = load_graph('data/digg/graph.gt')
     infection_times = pkl.load(open('data/digg/cascade.pkl', 'rb'))
     
     q = args.report_proba
@@ -80,9 +88,11 @@ if __name__ == '__main__':
     result_dir = os.path.join(output_dir, method, "{}".format(q))
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    print(args.evaluate)
+
     if not args.evaluate:
         print('run experiment...')
+        print(g)
+        print(sum(label_largest_component(g).a))
         run_k_runs(g, q, infection_times, method, k, result_dir, verbose=args.verbose)
     else:
         print('evaluate...')

@@ -17,7 +17,7 @@ model_params=("si -p 0.5" "ct -p 0.0" "ic -p 0.2192180745371594" "sp")  # grqc
 # model_params=("si -p 0.5" "ct -p 0.0" "ic -p 0.3079311820652021" "sp")  # facebook
 
 k=100
-qs=(0.0010 0.0020 0.0040 0.0080 0.0160 0.0320 0.0640 0.1280)
+qs=(0.001 0.002 0.004 0.008 0.016 0.032 0.064 0.128)
 misc="-k ${k} --parallel"
 
 for gtype in $gtypes; do
@@ -34,7 +34,7 @@ for gtype in $gtypes; do
 		if [[ ! -a ${check_path} ]]; then
 		    print "python paper_experiment.py -g ${gtype}  -m ${method}  -l ${model_param}  -q ${q}  -o outputs/paper_experiment/${gtype}/${model}/${method}/qs/${q}.time.pkl ${misc}"
 		else
-		    print "python paper_experiment.py -g ${gtype}  -m ${method}  -l ${model_param}  -q ${q}  -o outputs/paper_experiment/${gtype}/${model}/${method}/qs/${q}.pkl ${misc}"
+		    print "python paper_experiment.py -g ${gtype}  -m ${method}  -l ${model_param}  -q ${q}  -o outputs/paper_experiment/${gtype}/${model}/${method}/qs/${q}.time.pkl ${misc}"
 		    # print done
 		fi
 		

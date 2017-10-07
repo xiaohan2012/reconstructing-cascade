@@ -11,13 +11,13 @@ gtypes=(grqc)
 
 methods=(closure tbfs no-order)
 
-model_params=("si -p 0.2" "ct -p 0.0" "ic -p 0.2192180745371594" "sp")  # grqc
-# model_params=("ic -p 0.03842231539791447" "sp")  # email-eu
-# model_params=("ic -p 0.32221845177027353" "sp")  # arxiv
-# model_params=("ic -p 0.3079311820652021" "sp")  #  facebook
+model_params=("si -p 0.5" "ct -p 0.0" "ic -p 0.2192180745371594" "sp")  # grqc
+# model_params=("si -p 0.5" "ct -p 0.0" "ic -p 0.03842231539791447" "sp")  # email-eu
+# model_params=("si -p 0.5" "ct -p 0.0" "ic -p 0.32221845177027353" "sp")  # arxiv
+# model_params=("si -p 0.5" "ct -p 0.0" "ic -p 0.3079311820652021" "sp")  # facebook
 
-k=250
-qs=(0.0010 0.0020 0.0040 0.0080 0.0160 0.0320 0.0640 0.1280 0.2560 0.5120)
+k=100
+qs=(0.0010 0.0020 0.0040 0.0080 0.0160 0.0320 0.0640 0.1280)
 misc="-k ${k} --parallel"
 
 for gtype in $gtypes; do

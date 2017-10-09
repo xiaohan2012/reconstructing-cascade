@@ -27,9 +27,9 @@ def one_run(g, q, result_dir, i,
 def run_k_runs(g, q, infection_times, method,
                k, result_dir,
                verbose=False):
-    Parallel(n_jobs=-1)(delayed(one_run)(g, q, result_dir, i,
-                                         verbose)
-                        for i in tqdm(range(k), total=k))
+    Parallel(n_jobs=4)(delayed(one_run)(g, q, result_dir, i,
+                                        verbose)
+                       for i in tqdm(range(k), total=k))
 
 
 def evaluate(pred_edges, infection_times):
@@ -68,6 +68,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--cascade_id', required=True)
     parser.add_argument('-m', '--method', required=True)
     parser.add_argument('-q', '--report_proba', type=float, default=0.1)
     parser.add_argument('-k', '--repeat_times', type=int, default=100)
@@ -78,7 +79,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     g = load_graph('data/digg/graph.gt')
-    infection_times = pkl.load(open('data/digg/cascade.pkl', 'rb'))
+    cascade_path = 'data/digg/cascade_{}.pkl'.format(args.cascade_id)
+    print('cascade_path: ', cascade_path)
+
+    infection_times = pkl.load(open(cascade_path,
+                                    'rb'))
+    print('cascade size: ', len(np.nonzero(infection_times > 0)[0]))
     
     q = args.report_proba
     k = args.repeat_times

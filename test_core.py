@@ -6,7 +6,7 @@ from core import (TreeNotFound,
                   find_tree_by_closure)
 
 from gt_utils import extract_edges
-from ic import gen_nontrivial_cascade
+from cascade import gen_nontrivial_cascade
 from utils import tree_sizes_by_roots, get_rank_index
 from fixtures import grid_and_cascade, tree_and_cascade
 
@@ -42,7 +42,9 @@ def infection_times_invalid():
 def test_build_closure_with_order(g, cand_source, terminals,
                                   infection_times, infection_times_invalid):
     # just a simple test: 4 node tree
-    cg, eweight, _ = build_closure_with_order(g, cand_source, terminals, infection_times, debug=True)
+    cg, eweight = build_closure_with_order(g, cand_source, terminals, infection_times,
+                                           return_r2pred=False,
+                                           debug=True)
 
     assert set(map(int, cg.vertices())) == {0, 1, 2}
     assert set(extract_edges(cg)) == {(0, 1), (1, 2)}
@@ -51,8 +53,10 @@ def test_build_closure_with_order(g, cand_source, terminals,
         assert eweight[cg.edge(u, v)] == weight
 
     # no feasible solution
-    cg, eweight, _ = build_closure_with_order(g, cand_source, terminals,
-                                              infection_times_invalid, debug=True)
+    cg, eweight = build_closure_with_order(g, cand_source, terminals,
+                                           infection_times_invalid,
+                                           return_r2pred=False,
+                                           debug=True)
 
     assert set(map(int, cg.vertices())) == {0, 1, 2}
     assert set(extract_edges(cg)) == {(0, 1), (2, 1)}
@@ -88,7 +92,7 @@ def test_find_tree_by_closure(g, cand_source, terminals,
 
 
 def test_best_tree_sizes_grid_closure(grid_and_cascade):
-    g, _, infection_times, source, obs_nodes = grid_and_cascade
+    g, infection_times, source, obs_nodes = grid_and_cascade
     scores = tree_sizes_by_roots(g, obs_nodes, infection_times, source,
                                  method='closure')
     assert get_rank_index(scores, source) <= 10  # make sure it runs, how can we assume the source's rank?

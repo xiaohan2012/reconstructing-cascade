@@ -20,6 +20,7 @@ def get_edges(dist, root, terminals):
 def build_closure_with_order(
         g, cand_source, terminals, infection_times, k=-1,
         strictly_smaller=True,
+        return_r2pred=False,
         debug=False,
         verbose=False):
     """
@@ -41,7 +42,8 @@ def build_closure_with_order(
 
     gt.Graph(directed=True)
     """
-    r2pred = {}
+    if return_r2pred:
+        r2pred = {}
     edges = {}
     terminals = list(terminals)
 
@@ -50,7 +52,8 @@ def build_closure_with_order(
     cpbfs_search(g, source=cand_source, visitor=vis, terminals=terminals,
                  forbidden_nodes=terminals,
                  count_threshold=k)
-    r2pred[cand_source] = vis.pred
+    if return_r2pred:
+        r2pred[cand_source] = vis.pred
     for u, v, c in get_edges(vis.dist, cand_source, terminals):
         edges[(u, v)] = c
 
@@ -84,7 +87,10 @@ def build_closure_with_order(
         cpbfs_search(g, source=root, visitor=vis, terminals=list(late_terminals),
                      forbidden_nodes=list(set(terminals) - set(late_terminals)),
                      count_threshold=k)
-        r2pred[root] = vis.pred
+
+        if return_r2pred:
+            r2pred[root] = vis.pred
+
         for u, v, c in get_edges(vis.dist, root, late_terminals):
             if debug:
                 print('edge ({}, {})'.format(u, v))
@@ -107,7 +113,11 @@ def build_closure_with_order(
     eweight = gc.new_edge_property('int')
     eweight.set_2d_array(np.array(list(edges.values())))
     gc.set_vertex_filter(vfilt)
-    return gc, eweight, r2pred
+
+    rets = (gc, eweight)
+    if return_r2pred:
+        rets += (r2pred, )
+    return rets
 
 
 def find_tree_by_closure(
@@ -121,12 +131,13 @@ def find_tree_by_closure(
     """find the steiner tree by trainsitive closure
     
     """
-    gc, eweight, r2pred = closure_builder(g, root, terminals,
-                                          infection_times,
-                                          strictly_smaller=strictly_smaller,
-                                          k=k,
-                                          debug=debug,
-                                          verbose=verbose)
+    gc, eweight = closure_builder(g, root, terminals,
+                                  infection_times,
+                                  strictly_smaller=strictly_smaller,
+                                  k=k,
+                                  return_r2pred=False,
+                                  debug=debug,
+                                  verbose=verbose)
 
     # get the minimum spanning arborescence
     # graph_tool does not provide minimum_spanning_arborescence

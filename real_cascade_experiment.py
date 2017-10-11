@@ -51,10 +51,13 @@ def evaluate_from_result_dir(result_dir, infection_times, k):
     for p in paths:
         print(p)
         # TODO: add root
-        pred_edges = pkl.load(open(p, 'rb'))
+        try:
+            pred_edges = pkl.load(open(p, 'rb'))
+            scores = evaluate(pred_edges, infection_times)
+            rows.append(scores)
+        except FileNotFoundError:
+            print(p, ' not found')
 
-        scores = evaluate(pred_edges, infection_times)
-        rows.append(scores)
     path = result_dir + ".pkl"  # {q}.pkl
     if rows:
         df = pd.DataFrame(rows, columns=['n.correct_nodes',

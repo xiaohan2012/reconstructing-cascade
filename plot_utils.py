@@ -5,6 +5,7 @@ import networkx as nx
 from matplotlib import pyplot as plt, cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from cycler import cycler
+from itertools import cycle
 from utils import infeciton_time2weight
 
 
@@ -193,3 +194,8 @@ def plot_source_likelihood_surface(
     # ax.set_zlabel(plot_type)
     ax.view_init(*angle)
     return fig, ax
+
+
+def make_line_cycle():
+    lines = ["v-", "s-", "o-"]
+    return cycle(lines)

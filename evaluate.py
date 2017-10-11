@@ -13,11 +13,14 @@ from scipy.stats import kendalltau
 from feasibility import is_arborescence
 
 
-def edge_order_accuracy(pred_edges, infection_times):
+def edge_order_accuracy(pred_edges, infection_times, return_count=False):
     n_correct_edges = sum(1
                           for u, v in pred_edges
                           if infection_times[u] <= infection_times[v])
-    return n_correct_edges / len(pred_edges)
+    if return_count:
+        return n_correct_edges, len(pred_edges)
+    else:
+        return n_correct_edges / len(pred_edges)
     
 
 def matthew_cc(true_set, pred_set, n):

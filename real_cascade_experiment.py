@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pickle as pkl
 
-from glob import glob
 from tqdm import tqdm
 from graph_tool import load_graph
 from graph_tool.topology import label_largest_component
@@ -27,35 +26,42 @@ def one_run(g, q, result_dir, i,
 def run_k_runs(g, q, infection_times, method,
                k, result_dir,
                verbose=False):
-    Parallel(n_jobs=4)(delayed(one_run)(g, q, result_dir, i,
-                                        verbose)
-                       for i in tqdm(range(k), total=k))
+    Parallel(n_jobs=-1)(delayed(one_run)(g, q, result_dir, i,
+                                         verbose)
+                        for i in tqdm(range(k), total=k))
 
 
 def evaluate(pred_edges, infection_times):
     pred_nodes = set([i for e in pred_edges for i in e])
     true_nodes = set(np.nonzero(infection_times >= 0)[0])
 
-    prec = len(pred_nodes.intersection(true_nodes)) / len(pred_nodes)
-    rec = len(pred_nodes.intersection(true_nodes)) / len(true_nodes)
+    correct_nodes = pred_nodes.intersection(true_nodes)
+    # prec = len(correct_nodes) / len(pred_nodes)
+    # rec = len(correct_nodes) / len(true_nodes)
 
-    order_acc = edge_order_accuracy(pred_edges, infection_times)
-    return prec, rec, order_acc
+    n_correct_edges, n_pred_edges = edge_order_accuracy(pred_edges, infection_times, return_count=True)
+
+    return (len(correct_nodes), len(pred_nodes), len(true_nodes),
+            n_correct_edges, n_pred_edges)
 
 
-def evaluate_from_result_dir(result_dir, infection_times):
+def evaluate_from_result_dir(result_dir, infection_times, k):
     rows = []
-    for p in glob(result_dir + "/*.pkl"):
-        # print(p)
+    paths = [result_dir + "/{}.pkl".format(i) for i in range(k)]
+    for p in paths:
+        print(p)
         # TODO: add root
         pred_edges = pkl.load(open(p, 'rb'))
 
         scores = evaluate(pred_edges, infection_times)
         rows.append(scores)
-    path = result_dir + "/{}.pkl".format(q)
+    path = result_dir + ".pkl"  # {q}.pkl
     if rows:
-        df = pd.DataFrame(rows, columns=['n.prec', 'n.rec',
-                                         'order accuracy'])
+        df = pd.DataFrame(rows, columns=['n.correct_nodes',
+                                         'n.pred_nodes',
+                                         'n.true_nodes',
+                                         'n.correct_edges',
+                                         'n.pred_edges'])
         return (path, df)
     else:
         if os.path.exists(path):
@@ -96,14 +102,15 @@ if __name__ == '__main__':
         os.makedirs(result_dir)
 
     if not args.evaluate:
-        print('run experiment...')
+        print('run experiment...', 'q=', q, ', method=', method, 'cascade: ', args.cascade_id)
         print(g)
         print(sum(label_largest_component(g).a))
         run_k_runs(g, q, infection_times, method, k, result_dir, verbose=args.verbose)
     else:
         print('evaluate...')
         path, df = evaluate_from_result_dir(result_dir,
-                                            infection_times=infection_times)
+                                            infection_times=infection_times,
+                                            k=k)
         print(path)
         summary = df.describe()
         print(summary)

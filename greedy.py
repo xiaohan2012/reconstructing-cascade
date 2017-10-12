@@ -1,10 +1,9 @@
-import numpy as np
 from graph_tool import Graph
 from graph_tool.search import cpbfs_search
 from utils import extract_edges_from_pred, init_visitor
 
 
-# @profile
+@profile
 def find_tree_greedy(
         g, root, infection_times, source, obs_nodes,
         debug=False,
@@ -49,8 +48,7 @@ def find_tree_greedy(
         tree_nodes |= {v for e in new_edges for v in e}
 
     t = Graph(directed=True)
-    for _ in range(g.num_vertices()):
-        t.add_vertex()
+    t.add_vertex(g.num_vertices())
 
     vfilt = t.new_vertex_property('bool')
     vfilt.a = False

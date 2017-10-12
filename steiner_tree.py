@@ -9,16 +9,14 @@ from utils import init_visitor, extract_edges_from_pred
 from graph_tool.topology import min_spanning_tree
 from gt_utils import edges_to_directed_tree, build_minimum_tree, extract_edges
 
-
+# @profile
 def build_closure(g, terminals,
                   debug=False,
                   verbose=False):
     terminals = list(terminals)
     # build closure
     gc = Graph(directed=False)
-
-    for _ in range(g.num_vertices()):
-        gc.add_vertex()
+    gc.add_vertex(g.num_vertices())
 
     edges_with_weight = set()
     r2pred = {}

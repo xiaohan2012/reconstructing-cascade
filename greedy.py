@@ -3,7 +3,7 @@ from graph_tool.search import cpbfs_search
 from utils import extract_edges_from_pred, init_visitor
 
 
-@profile
+# @profile
 def find_tree_greedy(
         g, root, infection_times, source, obs_nodes,
         debug=False,

@@ -5,7 +5,7 @@
 # -l ic -p 0.021921807453715934 \
 kernprof -l  paper_experiment.py \
   -g grqc \
-  -m closure \
+  -m greedy \
   -l sp \
   -q 0.01 \
   -o outputs/paper_experiment/test.pkl \

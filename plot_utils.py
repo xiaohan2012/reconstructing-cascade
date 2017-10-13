@@ -197,5 +197,5 @@ def plot_source_likelihood_surface(
 
 
 def make_line_cycle():
-    lines = ["v-", "s-", "o-"]
+    lines = ["v-", "s-", "o-", '^-']
     return cycle(lines)

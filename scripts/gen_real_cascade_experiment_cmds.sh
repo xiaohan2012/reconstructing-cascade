@@ -1,12 +1,13 @@
 #! /bin/zsh
 
-methods=(closure tbfs no-order)
+# methods=(closure tbfs no-order)
+methods=(greedy)
 # qs=(0.001 0.002 0.004 0.008 0.016 0.032 0.064)
 qs=(0.001 0.002 0.004 0.008 0.016 0.032)
 k=48
 cascade_ids=({0..4})
 # cascade_ids=({0..9})
-# suffix="--evaluate True"
+suffix="--evaluate True"
 
 for q in $qs; do  # q first
     for cascade_id in $cascade_ids; do

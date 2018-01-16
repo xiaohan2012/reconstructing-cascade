@@ -316,3 +316,7 @@ def tree_sizes_by_roots(g, obs_nodes, infection_times, source, method='sync_tbfs
         return -tree_sizes, trees
     else:
         return -tree_sizes
+
+
+def cascade_size(l):
+    return len((l>=0).nonzero()[0])

@@ -10,6 +10,7 @@ from joblib import Parallel, delayed
 from paper_experiment import get_tree
 from cascade import observe_cascade
 from gt_utils import extract_edges
+from utils import cascade_size
 from evaluate import edge_order_accuracy
 
 
@@ -19,7 +20,7 @@ def one_run(g, q, result_dir, i,
     tree = get_tree(g, infection_times, source=None, obs_nodes=obs, method=method, verbose=verbose)
 
     pred_edges = extract_edges(tree)
-    pkl.dump(pred_edges,
+    pkl.dump((obs, pred_edges),
              open(result_dir + '/{}.pkl'.format(i), 'wb'))
 
 
@@ -82,13 +83,17 @@ if __name__ == '__main__':
     parser.add_argument('-q', '--report_proba', type=float, default=0.1)
     parser.add_argument('-k', '--repeat_times', type=int, default=100)
     parser.add_argument('-o', '--output_dir', default='output/real_cascade')
+    parser.add_argument('-s', '--small_cascade', action='store_true')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('--evaluate', type=bool, default=False)
 
     args = parser.parse_args()
     
     g = load_graph('data/digg/graph.gt')
-    cascade_path = 'data/digg/cascade_{}.pkl'.format(args.cascade_id)
+    if args.small_cascade:
+        cascade_path = 'data/digg/small_cascade_{}.pkl'.format(args.cascade_id)
+    else:
+        cascade_path = 'data/digg/cascade_{}.pkl'.format(args.cascade_id)
     print('cascade_path: ', cascade_path)
 
     infection_times = pkl.load(open(cascade_path,
@@ -105,7 +110,8 @@ if __name__ == '__main__':
         os.makedirs(result_dir)
 
     if not args.evaluate:
-        print('run experiment...', 'q=', q, ', method=', method, 'cascade: ', args.cascade_id)
+        print('run experiment...', 'q=', q, ', method=', method, 'cascade: ', args.cascade_id,
+              'cascade size: ', cascade_size(infection_times))
         print(g)
         print(sum(label_largest_component(g).a))
         run_k_runs(g, q, infection_times, method, k, result_dir, verbose=args.verbose)

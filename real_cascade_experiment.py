@@ -53,7 +53,11 @@ def evaluate_from_result_dir(result_dir, infection_times, k):
         print(p)
         # TODO: add root
         try:
-            pred_edges = pkl.load(open(p, 'rb'))
+            d = pkl.load(open(p, 'rb'))
+            if isinstance(d, tuple):
+                obs, pred_edges = d
+            else:
+                pred_edges = d
             scores = evaluate(pred_edges, infection_times)
             rows.append(scores)
         except FileNotFoundError:

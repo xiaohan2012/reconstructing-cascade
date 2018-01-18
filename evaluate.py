@@ -35,36 +35,43 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
                          true_edges):
     # change -1 to infinity (for order comparison)
     # infection_times[infection_times == -1] = float('inf')
-
+    obs_set = set(obs_nodes)
     true_nodes = {i for e in true_edges for i in e}
     pred_nodes = {i for e in pred_edges for i in e}
 
-    mcc = matthew_cc(true_nodes, pred_nodes, g.num_vertices())
-
     common_nodes = true_nodes.intersection(pred_nodes)
-    n_prec = len(common_nodes) / len(pred_nodes)
-    n_rec = len(common_nodes) / len(true_nodes)
+    
+    # remove observations
+    true_nodes -= obs_set
+    pred_nodes -= obs_set
+
+    # mcc = matthew_cc(true_nodes, pred_nodes, g.num_vertices())
+
+    correct_nodes = true_nodes.intersection(pred_nodes)
+    
+    n_prec = len(correct_nodes) / len(pred_nodes)
+    n_rec = len(correct_nodes) / len(true_nodes)
     obj = len(pred_edges)
 
     pred_tree = edges2graph(g, pred_edges)
 
-    root = next(v
-                for v in pred_tree.vertices()
-                if v.in_degree() == 0 and v.out_degree() > 0)
+    # root = next(v
+    #             for v in pred_tree.vertices()
+    #             if v.in_degree() == 0 and v.out_degree() > 0)
 
     assert is_arborescence(pred_tree)
     
-    pred_times = fill_missing_time(g, pred_tree, root, obs_nodes,
-                                   infection_times, debug=False)
+    # pred_times = fill_missing_time(g, pred_tree, root, obs_nodes,
+    #                                infection_times, debug=False)
     
     # consider only predicted nodes that are actual infections
-    nodes = list(common_nodes)
-    rank_corr = kendalltau(pred_times[nodes], infection_times[nodes])[0]
+    # nodes = list(common_nodes)
+    # rank_corr = kendalltau(pred_times[nodes], infection_times[nodes])[0]
 
-    common_edges = set(pred_edges).intersection(true_edges)
+    # common_edges = set(pred_edges).intersection(true_edges)
 
-    e_prec = len(common_edges) / len(pred_edges)
-    e_rec = len(common_edges) / len(true_edges)
+    # e_prec = len(common_edges) / len(pred_edges)
+    # e_rec = len(common_edges) / len(true_edges)
 
     # order accuracy on edge
     edges = [e for e in pred_edges
@@ -75,7 +82,7 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
     else:
         order_accuracy = 0.0
 
-    return (n_prec, n_rec, obj, e_prec, e_rec, rank_corr, order_accuracy, mcc)
+    return (n_prec, n_rec, obj, order_accuracy)
 
 
 def evaluate_from_result_dir(g, result_dir, qs):
@@ -102,10 +109,9 @@ def evaluate_from_result_dir(g, result_dir, qs):
         if rows:
             df = pd.DataFrame(rows, columns=['n.prec', 'n.rec',
                                              'obj',
-                                             'e.prec', 'e.rec',
-                                             'rank-corr',
-                                             'order accuracy',
-                                             'mcc'
+                                             # 'e.prec', 'e.rec',
+                                             # 'rank-corr',
+                                             'order accuracy'
             ])
             yield (path, df)
         else:

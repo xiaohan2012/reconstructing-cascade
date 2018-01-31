@@ -6,10 +6,8 @@ from graph_tool.all import load_graph
 from glob import glob
 from tqdm import tqdm
 from utils import edges2graph
-from infer_time import fill_missing_time
 from sklearn.metrics import matthews_corrcoef
 
-from scipy.stats import kendalltau
 from feasibility import is_arborescence
 
 
@@ -48,8 +46,12 @@ def evaluate_performance(g, root, source, pred_edges, obs_nodes, infection_times
     # mcc = matthew_cc(true_nodes, pred_nodes, g.num_vertices())
 
     correct_nodes = true_nodes.intersection(pred_nodes)
-    
-    n_prec = len(correct_nodes) / len(pred_nodes)
+
+    try:
+        n_prec = len(correct_nodes) / len(pred_nodes)
+    except ZeroDivisionError:
+        n_prec = 0
+
     n_rec = len(correct_nodes) / len(true_nodes)
     obj = len(pred_edges)
 

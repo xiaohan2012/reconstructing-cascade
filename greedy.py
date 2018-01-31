@@ -13,6 +13,9 @@ def find_tree_greedy(
     tree_nodes = {root}
     tree_edges = set()
     for u in sorted_obs:
+        if u in tree_nodes:
+            continue
+        
         # connect u to the tree
         vis = init_visitor(g, u)
         if debug:

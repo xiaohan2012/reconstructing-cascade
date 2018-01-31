@@ -1,5 +1,7 @@
 import numpy as np
+import os
 import networkx as nx
+from datetime import datetime
 from graph_tool import GraphView, Graph
 from graph_tool.search import pbfs_search
 from collections import Counter
@@ -319,4 +321,9 @@ def tree_sizes_by_roots(g, obs_nodes, infection_times, source, method='sync_tbfs
 
 
 def cascade_size(l):
-    return len((l>=0).nonzero()[0])
+    return len((l >= 0).nonzero()[0])
+
+
+def get_last_modified_date(path):
+    timestamp = os.path.getmtime(path)
+    return datetime.fromtimestamp(timestamp)

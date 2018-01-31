@@ -3,12 +3,14 @@
 methods=(greedy tbfs no-order closure)
 # methods=(closure)
 # qs=(0.001 0.002 0.004 0.008 0.016 0.032 0.064)
-qs=(0.1 0.2 0.3 0.4 0.5)
-k=48
-cascade_ids=({0..9})
+# qs=(0.1 0.2 0.3 0.4 0.5)
+qs=(0.002 0.004 0.008 0.016 0.032)
+
+k=8
+cascade_ids=({10..50})
 # cascade_ids=({0..9})
-# suffix="--evaluate True"
-suffix="--small_cascade "
+# suffix="--small_cascade --evaluate True"
+suffix="--small_cascade"
 
 for q in $qs; do  # q first
     for cascade_id in $cascade_ids; do

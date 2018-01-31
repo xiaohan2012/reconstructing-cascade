@@ -4,19 +4,19 @@
 # gtypes=(p2p-gnutella08 arxiv-hep-th enron-email)
 # gtypes=(arxiv-hep-th enron-email)
 # gtypes=(arxiv-hep-th facebook grqc email-eu)
-# gtypes=(grqc email-eu arxiv-hep-th facebook)
-gtypes=(arxiv-hep-th)
+gtypes=(grqc email-eu arxiv-hep-th facebook)
+# gtypes=(facebook)
 
-# methods=(tbfs closure no-order)
+methods=(tbfs closure no-order greedy)
 # methods=(tbfs greedy)
-methods=(no-order)
+# methods=(no-order)
 
-models=('ct')
-# models=('si' 'ic' 'ct' 'sp' )
+# models=('si')
+models=('si' 'ic' 'ct' 'sp' )
 
 # qs=(0.001 0.002 0.004 0.008 0.016 0.032 0.064 0.128)
-qs=(0.256)
-# qs=(0.001 0.002 0.004 0.008 0.016 0.032 0.064 0.128 0.256)
+# qs=(0.256)
+qs=(0.001 0.002 0.004 0.008 0.016 0.032 0.064 0.128 0.256)
 
 for gtype in $gtypes; do
     for method in $methods; do

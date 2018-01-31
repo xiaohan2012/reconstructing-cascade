@@ -10,18 +10,28 @@ from joblib import Parallel, delayed
 from paper_experiment import get_tree
 from cascade import observe_cascade
 from gt_utils import extract_edges
-from utils import cascade_size
+from utils import cascade_size, get_last_modified_date
 from evaluate import edge_order_accuracy
 
 
 def one_run(g, q, result_dir, i,
             verbose):
+    result_path = result_dir + '/{}.pkl'.format(i)
+    try:
+        dt = get_last_modified_date(result_path)
+        if dt.year == 2018:
+            # we don't recalcualte
+            print('skipping {}'.format(result_path))
+            return
+    except FileNotFoundError:
+        pass
+    
     obs = observe_cascade(infection_times, source=None, q=q)
     tree = get_tree(g, infection_times, source=None, obs_nodes=obs, method=method, verbose=verbose)
 
     pred_edges = extract_edges(tree)
     pkl.dump((obs, pred_edges),
-             open(result_dir + '/{}.pkl'.format(i), 'wb'))
+             open(result_path, 'wb'))
 
 
 def run_k_runs(g, q, infection_times, method,
@@ -32,9 +42,9 @@ def run_k_runs(g, q, infection_times, method,
                         for i in tqdm(range(k), total=k))
 
 
-def evaluate(pred_edges, infection_times):
-    pred_nodes = set([i for e in pred_edges for i in e])
-    true_nodes = set(np.nonzero(infection_times >= 0)[0])
+def evaluate(pred_edges, infection_times, obs):
+    pred_nodes = set([i for e in pred_edges for i in e]) - set(obs)
+    true_nodes = set(np.nonzero(infection_times >= 0)[0]) - set(obs)
 
     correct_nodes = pred_nodes.intersection(true_nodes)
     # prec = len(correct_nodes) / len(pred_nodes)
@@ -53,12 +63,8 @@ def evaluate_from_result_dir(result_dir, infection_times, k):
         print(p)
         # TODO: add root
         try:
-            d = pkl.load(open(p, 'rb'))
-            if isinstance(d, tuple):
-                obs, pred_edges = d
-            else:
-                pred_edges = d
-            scores = evaluate(pred_edges, infection_times)
+            obs, pred_edges = pkl.load(open(p, 'rb'))
+            scores = evaluate(pred_edges, infection_times, obs)
             rows.append(scores)
         except FileNotFoundError:
             print(p, ' not found')
@@ -124,8 +130,11 @@ if __name__ == '__main__':
         path, df = evaluate_from_result_dir(result_dir,
                                             infection_times=infection_times,
                                             k=k)
-        print(path)
-        summary = df.describe()
-        print(summary)
+
         print('writing to {}'.format(path))
-        summary.to_pickle(path)
+        if args.small_cascade:
+            df.to_pickle(path)
+        else:
+            summary = df.describe()
+            print(summary)
+            summary.to_pickle(path)

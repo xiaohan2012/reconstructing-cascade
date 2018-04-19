@@ -77,9 +77,11 @@ def plot_snapshot(g, pos,
                                 ax=ax)
     kwargs = {"arrows": arrows}
     if edges:
-        nx.draw_networkx_edges(g, pos=pos, ax=ax, edgelist=edges, **kwargs)
+        nx.draw_networkx_edges(g, pos=pos, ax=ax, edgelist=edges,
+                               **kwargs)
     else:
-        nx.draw_networkx_edges(g, pos=pos, ax=ax, **kwargs)
+        nx.draw_networkx_edges(g, pos=pos, ax=ax,
+                               **kwargs)
 
 
 def add_colorbar(cvalues, cmap='OrRd', ax=None):
